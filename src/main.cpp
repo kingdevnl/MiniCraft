@@ -1,9 +1,8 @@
-#include <iostream>
+#include <spdlog/spdlog.h>
 #include <GLFW/glfw3.h>
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-
+    spdlog::info("Hello, World!");
     glfwInit();
     glfwDefaultWindowHints();
     auto window = glfwCreateWindow(640, 480, "Hello, World!", nullptr, nullptr);
