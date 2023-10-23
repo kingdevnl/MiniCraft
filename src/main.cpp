@@ -4,10 +4,16 @@
 int main() {
     spdlog::info("Hello, World!");
 
-    MiniCraft::m_Instance = CreateRef<MiniCraft>();
 
-    MiniCraft::m_Instance->Init();
-    MiniCraft::m_Instance->Run();
+    try {
+        MiniCraft::m_Instance = CreateRef<MiniCraft>();
+
+        MiniCraft::m_Instance->Init();
+        MiniCraft::m_Instance->Run();
+    } catch (std::exception &e) {
+        spdlog::critical("{}", e.what());
+    }
+
 
     return 0;
 }

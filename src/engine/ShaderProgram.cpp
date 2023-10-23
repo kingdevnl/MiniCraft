@@ -1,10 +1,10 @@
 #include <gl/glew.h>
 #include <spdlog/spdlog.h>
+#include <glm/gtc/type_ptr.hpp>
 #include "ShaderProgram.hpp"
 
 ShaderProgram::ShaderProgram(std::string vertexSource, std::string fragmentSource)
-    : m_VertexSource(vertexSource), m_FragmentSource(fragmentSource)
-{
+        : m_VertexSource(vertexSource), m_FragmentSource(fragmentSource) {
 
 }
 
@@ -12,8 +12,8 @@ void ShaderProgram::Create() {
     m_VertexShader = glCreateShader(GL_VERTEX_SHADER);
     m_FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    const char* vertexSource = m_VertexSource.c_str();
-    const char* fragmentSource = m_FragmentSource.c_str();
+    const char *vertexSource = m_VertexSource.c_str();
+    const char *fragmentSource = m_FragmentSource.c_str();
 
     glShaderSource(m_VertexShader, 1, &vertexSource, nullptr);
     glShaderSource(m_FragmentShader, 1, &fragmentSource, nullptr);
@@ -23,7 +23,9 @@ void ShaderProgram::Create() {
     int result;
     glGetShaderiv(m_VertexShader, GL_COMPILE_STATUS, &result);
 
-    if(result == GL_FALSE) {
+    spdlog::info("Compiling vertex shader: {}", result);
+
+    if (result == GL_FALSE) {
         char infoLog[512];
         glGetShaderInfoLog(m_VertexShader, 512, nullptr, infoLog);
         spdlog::critical("Failed to compile vertex shader: {}", infoLog);
@@ -34,7 +36,7 @@ void ShaderProgram::Create() {
 
     glGetShaderiv(m_FragmentShader, GL_COMPILE_STATUS, &result);
 
-    if(result == GL_FALSE) {
+    if (result == GL_FALSE) {
         char infoLog[512];
         glGetShaderInfoLog(m_FragmentShader, 512, nullptr, infoLog);
         spdlog::critical("Failed to compile fragment shader: {}", infoLog);
@@ -67,4 +69,39 @@ void ShaderProgram::Bind() {
 
 void ShaderProgram::Unbind() {
     glUseProgram(0);
+}
+
+void ShaderProgram::SetUniform(std::string name, float value) {
+    glUniform1f(GetUniformLocation(name), value);
+}
+
+void ShaderProgram::SetUniform(std::string name, glm::vec2 value) {
+    glUniform2f(GetUniformLocation(name), value.x, value.y);
+}
+
+void ShaderProgram::SetUniform(std::string name, glm::vec3 value) {
+    glUniform3f(GetUniformLocation(name), value.x, value.y, value.z);
+}
+
+void ShaderProgram::SetUniform(std::string name, glm::vec4 value) {
+    glUniform4f(GetUniformLocation(name), value.x, value.y, value.z, value.w);
+}
+
+void ShaderProgram::SetUniform(std::string name, glm::mat4 value) {
+    glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
+}
+
+int ShaderProgram::GetUniformLocation(std::string& name) {
+
+    if (m_UniformLocations.find(name) != m_UniformLocations.end()) {
+        return m_UniformLocations[name];
+    }
+
+    int loc = glGetUniformLocation(m_Program, name.c_str());
+    if (loc == -1) {
+        spdlog::critical("Uniform '{}' not found!", name);
+        throw std::runtime_error("Uniform not found!");
+    }
+    m_UniformLocations[name] = loc;
+    return loc;
 }

@@ -36,6 +36,9 @@ void Window::Create() {
 
 void Window::Update() {
     glfwGetFramebufferSize(m_Handle, &m_Width, &m_Height);
+    if (m_Width < 5) m_Width = 5;
+    if (m_Height < 5) m_Height = 5;
+
     glfwSwapBuffers(m_Handle);
     glfwPollEvents();
 

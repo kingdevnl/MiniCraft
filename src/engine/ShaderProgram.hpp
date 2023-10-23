@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
+#include <unordered_map>
+#include <glm/glm.hpp>
 #include "engine/Types.hpp"
+
 
 class ShaderProgram {
 public:
@@ -11,6 +14,13 @@ public:
     void Bind();
     void Unbind();
 
+    void SetUniform(std::string name, float value);
+    void SetUniform(std::string name, glm::vec2 value);
+    void SetUniform(std::string name, glm::vec3 value);
+    void SetUniform(std::string name, glm::vec4 value);
+    void SetUniform(std::string name, glm::mat4 value);
+
+
 private:
     uint m_Program;
 
@@ -19,6 +29,8 @@ private:
 
     uint m_VertexShader;
     uint m_FragmentShader;
+    std::unordered_map<std::string, int> m_UniformLocations;
+    int GetUniformLocation(std::string& name);
 
 public:
     static Ref<ShaderProgram> FromFile(std::string vertexPath, std::string fragmentPath);
