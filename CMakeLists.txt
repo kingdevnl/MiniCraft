@@ -12,3 +12,5 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.hpp src/**/*.cpp src/**/*.hpp)
 
 add_executable(MiniCraft ${SOURCES})
 target_link_libraries(MiniCraft PRIVATE glfw GLEW::GLEW glm::glm spdlog::spdlog spdlog::spdlog_header_only)
+
+target_include_directories(MiniCraft PRIVATE src/)

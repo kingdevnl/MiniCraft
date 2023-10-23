@@ -1,18 +1,13 @@
 #include <spdlog/spdlog.h>
-#include <GLFW/glfw3.h>
+#include "MiniCraft.hpp"
 
 int main() {
     spdlog::info("Hello, World!");
-    glfwInit();
-    glfwDefaultWindowHints();
-    auto window = glfwCreateWindow(640, 480, "Hello, World!", nullptr, nullptr);
 
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
-    }
+    MiniCraft::m_Instance = CreateRef<MiniCraft>();
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    MiniCraft::m_Instance->Init();
+    MiniCraft::m_Instance->Run();
 
     return 0;
 }
