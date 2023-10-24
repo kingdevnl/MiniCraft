@@ -152,6 +152,24 @@ void MiniCraft::OnUpdate(double deltaTime) {
     }
 
 
+    // have a 4x4 of chunks around the player
+    glm::vec3 camPos = m_Camera->GetPosition();
+    glm::vec3 chunkPos = glm::vec3(floor(camPos.x / CHUNK_SIZE), 0, floor(camPos.z / CHUNK_SIZE));
+    int radius = 8;
+
+    for (int x = -radius / 2; x < radius / 2; x++) {
+        for (int z = -radius / 2; z < radius / 2; z++) {
+            glm::vec3 pos = glm::vec3(chunkPos.x + x, 0, chunkPos.z + z);
+            if (m_Chunks.find(pos) == m_Chunks.end()) {
+                Chunk chunk = Chunk(pos);
+                chunk.Generate();
+                chunk.BuildMesh();
+                m_Chunks.insert({chunk.GetChunkPos(), chunk});
+            }
+        }
+    }
+
+
 
 }
 
