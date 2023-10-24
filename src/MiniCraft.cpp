@@ -1,4 +1,3 @@
-#include <vector>
 #include <spdlog/spdlog.h>
 #include <gl/glew.h>
 #include <GLFW/glfw3.h>
@@ -6,6 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
 #include "MiniCraft.hpp"
 #include "vendor/BS_thread_pool.hpp"
 #include "engine/Window.hpp"
@@ -14,13 +14,24 @@
 #include "engine/TextureArray.hpp"
 #include "game/BlockRegistry.hpp"
 #include "game/Chunk.hpp"
-#include "engine/Timer.hpp"
 
 
 BS::thread_pool pool(4);
+namespace JS {
+    void log(qjs::rest<std::string> args) {
+        std::string fmt = args[0];
+        for (int i = 1; i < args.size(); i++) {
+            fmt += " " + args[i];
+        }
+
+        spdlog::info(fmt);
+    }
+}
 
 
-MiniCraft::MiniCraft() {
+MiniCraft::MiniCraft()
+        : m_JSRuntime(qjs::Runtime()), m_JSContext(m_JSRuntime)
+{
     this->m_Window = CreateRef<Window>(1080, 720, "MiniCraft");
 
     this->m_Camera = CreateRef<Camera>(45.0f, 0.1f, 200.0f);
@@ -32,6 +43,33 @@ MiniCraft::MiniCraft() {
 
     this->m_TextureArray = CreateRef<TextureArray>();
     this->m_BlockRegistry = CreateRef<BlockRegistry>(m_TextureArray);
+
+
+    js_std_init_handlers(m_JSRuntime.rt);
+    js_std_add_helpers(m_JSContext.ctx, 0, NULL);
+    js_init_module_std(m_JSContext.ctx, "std");
+    js_init_module_os(m_JSContext.ctx, "os");
+
+
+    //define a global log function
+
+    auto& module = m_JSContext.addModule("MiniCraft");
+    module.function<&JS::log>("log");
+
+
+    try {
+        m_JSContext.eval(R"xxx(
+            import * as MiniCraft from 'MiniCraft';
+            MiniCraft.log("Hello, World! from JS", 123, "works");
+        )xxx", "<import>", JS_EVAL_TYPE_MODULE);
+    }    catch(qjs::exception)
+    {
+        auto exc = m_JSContext.getException();
+        std::cerr << (std::string) exc << std::endl;
+        if((bool) exc["stack"])
+            std::cerr << (std::string) exc["stack"] << std::endl;
+    }
+
 
 
 }
@@ -168,7 +206,6 @@ void MiniCraft::OnUpdate(double deltaTime) {
             }
         }
     }
-
 
 
 }

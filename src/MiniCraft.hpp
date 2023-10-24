@@ -3,6 +3,10 @@
 #include "engine/Types.hpp"
 #include "game/Chunk.hpp"
 
+#pragma warning(disable: 4576)
+#include "quickjspp.hpp"
+#include "quickjs-libc.h"
+
 class Window;
 class ShaderProgram;
 class Camera;
@@ -34,9 +38,9 @@ private:
 
     std::unordered_map<glm::vec3, Chunk> m_Chunks;
 
-    uint m_VAO, m_VBO;
-
     bool m_Wireframe = false;
+    qjs::Runtime m_JSRuntime;
+    qjs::Context m_JSContext;
 
 
 public:
