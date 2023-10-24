@@ -23,7 +23,7 @@ BS::thread_pool pool(4);
 MiniCraft::MiniCraft() {
     this->m_Window = CreateRef<Window>(1080, 720, "MiniCraft");
 
-    this->m_Camera = CreateRef<Camera>(45.0f, 0.1f, 100.0f);
+    this->m_Camera = CreateRef<Camera>(45.0f, 0.1f, 200.0f);
     m_Camera->OnResize(m_Window->GetWidth(), m_Window->GetHeight());
     m_Camera->RecalculateView();
 
