@@ -22,7 +22,7 @@ public:
 
 private:
     uint m_TextureID;
-    glm::vec2 m_ImageSize = glm::vec2(384, 384);
+    glm::vec2 m_ImageSize = glm::vec2(160, 160);
     uint m_ImageIndex = 0;
     std::unordered_map<std::string, uint> m_TextureMap;
 };

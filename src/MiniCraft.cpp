@@ -31,9 +31,10 @@ MiniCraft::MiniCraft() {
     this->m_BlockRegistry = CreateRef<BlockRegistry>(m_TextureArray);
 
 
+
 }
 
-Chunk chunk(glm::vec3(0, 0, 0));
+
 
 
 void MiniCraft::Init() {
@@ -47,8 +48,16 @@ void MiniCraft::Init() {
 
     m_BlockRegistry->LoadFromFile("assets/blocks.json");
 
-    chunk.Generate();
-    chunk.BuildMesh();
+
+    //gemerate a 4x4 arround 0 0 0
+    for (int x = -2; x < 2; x++) {
+        for (int z = -2; z < 2; z++) {
+            auto chunk = Chunk(glm::vec3(x, 0, z));
+            chunk.Generate();
+            chunk.BuildMesh();
+            m_Chunks.insert({chunk.GetChunkPos(), chunk});
+        }
+    }
 
 
 
@@ -127,7 +136,11 @@ void MiniCraft::OnUpdate(double deltaTime) {
     m_Shader->SetUniform1i("texArray", m_TextureArray->GetTextureID());
 
 
-    chunk.Render(m_Shader);
+    for (auto &pair : m_Chunks) {
+        auto chunk = pair.second;
+        chunk.Render(m_Shader);
+    }
+
 
 
 }

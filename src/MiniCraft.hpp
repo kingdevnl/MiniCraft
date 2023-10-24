@@ -1,4 +1,7 @@
+#include <unordered_map>
+#include <glm/glm.hpp>
 #include "engine/Types.hpp"
+#include "game/Chunk.hpp"
 
 class Window;
 class ShaderProgram;
@@ -27,6 +30,9 @@ private:
     Ref<ShaderProgram> m_Shader;
     Ref<TextureArray> m_TextureArray;
     Ref<BlockRegistry> m_BlockRegistry;
+
+    std::unordered_map<glm::vec3, Chunk> m_Chunks;
+
     uint m_VAO, m_VBO;
 
     bool m_Wireframe = false;

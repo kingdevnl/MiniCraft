@@ -19,5 +19,19 @@
       "side": "assets/textures/grass_side.png",
       "top": "assets/textures/grass_top.png"
     }
+  },
+  "cobblestone": {
+    "id": 3,
+    "textures": {
+      "side": "assets/textures/cobblestone.png",
+      "top": "assets/textures/cobblestone.png"
+    }
+  },
+  "bedrock": {
+    "id": 4,
+    "textures": {
+      "side": "assets/textures/bedrock.png",
+      "top": "assets/textures/bedrock.png"
+    }
   }
 }

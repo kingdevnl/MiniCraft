@@ -1,7 +1,8 @@
 #include <gl/glew.h>
+#include "game/Chunk.hpp"
+
 #include "MiniCraft.hpp"
 #include "engine/TextureArray.hpp"
-#include "game/Chunk.hpp"
 #include "game/BlockRegistry.hpp"
 #include "game/Vertex.hpp"
 #include "game/BlockFace.hpp"
@@ -15,6 +16,13 @@ void Chunk::Generate() {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 glm::vec3 pos = glm::vec3(x, y, z);
 
+                //bottom is bedrock
+                if (pos.y == 0) {
+                    auto blockInfo = blockRegistry->GetBlockInfo("bedrock");
+                    m_Blocks[pos] = Block{blockInfo, pos};
+                    continue;
+                }
+
                 //if y is top make it grass else dirt
                 if (pos.y == CHUNK_SIZE - 1) {
                     auto blockInfo = blockRegistry->GetBlockInfo("grass");
@@ -22,7 +30,14 @@ void Chunk::Generate() {
                     continue;
                 }
 
-                auto blockInfo = blockRegistry->GetBlockInfo("dirt");
+                //3 blocks of dirt under grass
+                if (pos.y == CHUNK_SIZE - 2 || pos.y == CHUNK_SIZE - 3 || pos.y == CHUNK_SIZE - 4) {
+                    auto blockInfo = blockRegistry->GetBlockInfo("dirt");
+                    m_Blocks[pos] = Block{blockInfo, pos};
+                    continue;
+                }
+
+                auto blockInfo = blockRegistry->GetBlockInfo("cobblestone");
                 m_Blocks[pos] = Block{blockInfo, pos};
             }
         }
@@ -65,6 +80,9 @@ void Chunk::BuildMesh() {
     }
 
     this->m_VertexCount = vertices.size();
+
+    glGenVertexArrays(1, &m_VAO);
+    glBindVertexArray(m_VAO);
 
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
