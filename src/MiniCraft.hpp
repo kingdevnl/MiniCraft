@@ -13,6 +13,7 @@ class MiniCraft {
 
 public:
     MiniCraft();
+    ~MiniCraft();
 
     void Init();
     void InitImGui();

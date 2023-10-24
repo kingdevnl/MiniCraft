@@ -3,7 +3,6 @@
 #include "MiniCraft.hpp"
 #include "engine/TextureArray.hpp"
 #include "game/BlockRegistry.hpp"
-#include "game/Vertex.hpp"
 #include "game/BlockFace.hpp"
 #include "vendor/FastNoiseLite.hpp"
 
@@ -99,15 +98,12 @@ void Chunk::Generate() {
 
 void Chunk::BuildMesh() {
     auto textureArray = MiniCraft::Get()->GetTextureArray();
-    std::vector<Vertex> vertices;
 
 
     for (auto &[k, block]: m_Blocks) {
-
-
         auto addFace = [&](EnumFace face, float texID) {
             auto v = BlockFace::GetVert(face, this, block, texID);
-            vertices.insert(vertices.end(), v.begin(), v.end());
+            m_Vertices.insert(m_Vertices.end(), v.begin(), v.end());
         };
 
 
@@ -132,14 +128,42 @@ void Chunk::BuildMesh() {
 
     }
 
-    this->m_VertexCount = vertices.size();
+    this->m_VertexCount = m_Vertices.size();
 
+    SetIsDirty(true);
+
+
+
+}
+
+Block Chunk::GetBlockAt(glm::vec3 pos) {
+    //check if block exists
+    if (m_Blocks.find(pos) == m_Blocks.end()) {
+        auto *info = new BlockInfo();
+        info->id = 0;
+        return Block{info, pos};
+    }
+    return m_Blocks[pos];
+}
+
+void Chunk::Render(Ref<ShaderProgram> shaderProgram) {
+
+    if(m_IsDirty) {
+        CreateVAO();
+    }
+
+    glBindVertexArray(m_VAO);
+    glDrawArrays(GL_TRIANGLES, 0, m_VertexCount);
+    glBindVertexArray(0);
+}
+
+void Chunk::CreateVAO() {
     glGenVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
 
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_Vertices.size() * sizeof(Vertex), m_Vertices.data(), GL_STATIC_DRAW);
 
 
 
@@ -164,20 +188,5 @@ void Chunk::BuildMesh() {
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-}
-
-Block Chunk::GetBlockAt(glm::vec3 pos) {
-    //check if block exists
-    if (m_Blocks.find(pos) == m_Blocks.end()) {
-        auto *info = new BlockInfo();
-        info->id = 0;
-        return Block{info, pos};
-    }
-    return m_Blocks[pos];
-}
-
-void Chunk::Render(Ref<ShaderProgram> shaderProgram) {
-    glBindVertexArray(m_VAO);
-    glDrawArrays(GL_TRIANGLES, 0, m_VertexCount);
-    glBindVertexArray(0);
+    SetIsDirty(false);
 }

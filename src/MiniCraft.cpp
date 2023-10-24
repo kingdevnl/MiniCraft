@@ -6,8 +6,8 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-
 #include "MiniCraft.hpp"
+#include "vendor/BS_thread_pool.hpp"
 #include "engine/Window.hpp"
 #include "engine/Camera.hpp"
 #include "engine/ShaderProgram.hpp"
@@ -16,6 +16,8 @@
 #include "game/Chunk.hpp"
 #include "engine/Timer.hpp"
 
+
+BS::thread_pool pool(4);
 
 
 MiniCraft::MiniCraft() {
@@ -32,10 +34,10 @@ MiniCraft::MiniCraft() {
     this->m_BlockRegistry = CreateRef<BlockRegistry>(m_TextureArray);
 
 
-
 }
 
-
+MiniCraft::~MiniCraft() {
+}
 
 
 void MiniCraft::Init() {
@@ -44,26 +46,25 @@ void MiniCraft::Init() {
     m_Shader->Create();
     m_TextureArray->Create();
 
-    m_Camera->SetPosition({-0.2776233, 17.747576, 5.88351});
+    m_Camera->SetPosition({-0.91402066, 55.045845, 6.0809617});
 
     InitImGui();
 
     m_BlockRegistry->LoadFromFile("assets/blocks.json");
 
-    int radius = 2;
+    glm::vec3 startPos = glm::vec3(0, 0, 0);
+    int radius = 10;
 
-    //make in a circle arround 0,0 of radius
-    for(int x = -radius; x < radius; x++) {
-        for(int z = -radius; z < radius; z++) {
-            auto chunk = Chunk(glm::vec3(x, 0, z));
-            chunk.Generate();
-            chunk.BuildMesh();
-            m_Chunks.insert({chunk.GetChunkPos(), chunk});
+    for (int x = -radius / 2; x < radius / 2; x++) {
+        for (int z = -radius / 2; z < radius / 2; z++) {
+            pool.submit([](int x, int z) {
+                auto chunk = Chunk(glm::vec3(x, 0, z));
+                chunk.Generate();
+                chunk.BuildMesh();
+                MiniCraft::Get()->m_Chunks.insert({chunk.GetChunkPos(), chunk});
+            }, x, z);
         }
     }
-
-
-
 
 
     glfwSetKeyCallback(m_Window->GetHandle(), [](GLFWwindow *, int key, int scancode, int action, int) {
@@ -146,11 +147,9 @@ void MiniCraft::OnUpdate(double deltaTime) {
     m_Shader->SetUniform1i("texArray", m_TextureArray->GetTextureID());
 
 
-
-    for(auto& [k,v] : m_Chunks) {
+    for (auto &[k, v]: m_Chunks) {
         v.Render(m_Shader);
     }
-
 
 
 

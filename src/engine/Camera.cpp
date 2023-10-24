@@ -35,6 +35,10 @@ bool Camera::OnUpdate(float ts)
 
     float speed = 5.0f;
 
+    if(Input::IsKeyDown(KeyCode::LeftAlt))
+        speed *= 2.0f;
+
+
     // Movement
     if (Input::IsKeyDown(KeyCode::W))
     {
