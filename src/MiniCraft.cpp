@@ -48,10 +48,8 @@ void MiniCraft::Init() {
 
     m_BlockRegistry->LoadFromFile("assets/blocks.json");
 
-
-    //gemerate a 4x4 arround 0 0 0
-    for (int x = -2; x < 2; x++) {
-        for (int z = -2; z < 2; z++) {
+    for(int x = 0; x < 4; x++) {
+        for(int z = 0; z < 4; z++) {
             auto chunk = Chunk(glm::vec3(x, 0, z));
             chunk.Generate();
             chunk.BuildMesh();
@@ -73,6 +71,12 @@ void MiniCraft::Init() {
         }
         if (action == GLFW_PRESS && key == GLFW_KEY_END) {
             auto camPos = MiniCraft::Get()->m_Camera->GetPosition();
+
+            glm::vec3 chunkPos = glm::vec3(floor(camPos.x / CHUNK_SIZE), 0, floor(camPos.z / CHUNK_SIZE));
+            Chunk chunk = Chunk(chunkPos);
+            chunk.Generate();
+            chunk.BuildMesh();
+            MiniCraft::Get()->m_Chunks.insert({chunk.GetChunkPos(), chunk});
             spdlog::info("Camera Position: ({}, {}, {})", camPos.x, camPos.y, camPos.z);
         }
     });
