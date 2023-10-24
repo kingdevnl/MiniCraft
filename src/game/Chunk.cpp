@@ -8,10 +8,6 @@
 
 Chunk::Chunk(glm::vec3 mChunkPos) : m_ChunkPos(mChunkPos) {}
 
-//simple hash function for 3 numbers
-int hash(int x, int y, int z) {
-    return x * 73856093 ^ y * 19349663 ^ z * 83492791;
-}
 
 
 void Chunk::Generate() {
@@ -137,7 +133,6 @@ void Chunk::BuildMesh() {
 }
 
 Block Chunk::GetBlockAt(glm::vec3 pos) {
-    //check if block exists
     if (m_Blocks.find(pos) == m_Blocks.end()) {
         auto *info = new BlockInfo();
         info->id = 0;

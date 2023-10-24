@@ -7,6 +7,15 @@
 BlockRegistry::BlockRegistry(const Ref<TextureArray> &mTextureArray) : m_TextureArray(mTextureArray) {}
 
 
+float hash(std::string str) {
+    float hash = 0;
+    for (int i = 0; i < str.length(); i++) {
+        hash += str[i] * i * 73856093 ^ i * 19349663 ^ i * 83492791;
+    }
+    return abs(hash);
+}
+
+
 void BlockRegistry::LoadFromFile(std::string path) {
     //read assets/blocks.json
     std::ifstream i("assets/blocks.json");
@@ -18,9 +27,15 @@ void BlockRegistry::LoadFromFile(std::string path) {
         std::string blockKey = element.key();
         auto blockObject = element.value();
 
-        BlockInfo *blockInfo = new BlockInfo();
+        auto *blockInfo = new BlockInfo();
         blockInfo->name = blockKey;
-        blockInfo->id = blockObject["id"];
+
+        if(blockObject.contains("id")) {
+            blockInfo->id = blockObject["id"];
+        } else {
+            blockInfo->id = hash(blockKey);
+        }
+
         blockInfo->textures.side = blockObject["textures"]["side"];
         blockInfo->textures.top = blockObject["textures"]["top"];
 
@@ -34,7 +49,7 @@ void BlockRegistry::LoadFromFile(std::string path) {
         }
 
 
-        spdlog::info("BlockRegistry: Loaded block {}", blockKey);
+        spdlog::info("BlockRegistry: Loaded block {}:{}", blockKey, blockInfo->id);
     }
 
 
