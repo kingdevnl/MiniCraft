@@ -1,0 +1,23 @@
+{
+  "air": {
+    "id": 0,
+    "textures": {
+      "side": "assets/textures/air.png",
+      "top": "assets/textures/air.png"
+    }
+  },
+  "dirt": {
+    "id": 1,
+    "textures": {
+      "side": "assets/textures/dirt.png",
+      "top": "assets/textures/dirt.png"
+    }
+  },
+  "grass": {
+    "id": 2,
+    "textures": {
+      "side": "assets/textures/grass_side.png",
+      "top": "assets/textures/grass_top.png"
+    }
+  }
+}

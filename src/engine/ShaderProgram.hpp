@@ -14,6 +14,7 @@ public:
     void Bind();
     void Unbind();
 
+    void SetUniform1i(std::string name, int value);
     void SetUniform(std::string name, float value);
     void SetUniform(std::string name, glm::vec2 value);
     void SetUniform(std::string name, glm::vec3 value);

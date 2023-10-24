@@ -2,6 +2,7 @@
 #include <spdlog/spdlog.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "ShaderProgram.hpp"
+#include "engine/io.hpp"
 
 ShaderProgram::ShaderProgram(std::string vertexSource, std::string fragmentSource)
         : m_VertexSource(vertexSource), m_FragmentSource(fragmentSource) {
@@ -49,6 +50,15 @@ void ShaderProgram::Create() {
     glAttachShader(m_Program, m_FragmentShader);
     glLinkProgram(m_Program);
 
+    glGetProgramiv(m_Program, GL_LINK_STATUS, &result);
+
+    if (result == GL_FALSE) {
+        char infoLog[512];
+        glGetProgramInfoLog(m_Program, 512, nullptr, infoLog);
+        spdlog::critical("Failed to link shader program: {}", infoLog);
+        throw std::runtime_error("Failed to link shader program!");
+    }
+
 }
 
 ShaderProgram::~ShaderProgram() {
@@ -60,7 +70,9 @@ ShaderProgram::~ShaderProgram() {
 }
 
 Ref<ShaderProgram> ShaderProgram::FromFile(std::string vertexPath, std::string fragmentPath) {
-    return Ref<ShaderProgram>();
+    std::string vs = IO::ReadFile(std::move(vertexPath));
+    std::string fs = IO::ReadFile(std::move(fragmentPath));
+    return CreateRef<ShaderProgram>(vs, fs);
 }
 
 void ShaderProgram::Bind() {
@@ -69,6 +81,10 @@ void ShaderProgram::Bind() {
 
 void ShaderProgram::Unbind() {
     glUseProgram(0);
+}
+
+void ShaderProgram::SetUniform1i(std::string name, int value) {
+    glUniform1i(GetUniformLocation(name), value);
 }
 
 void ShaderProgram::SetUniform(std::string name, float value) {
