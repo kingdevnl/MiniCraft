@@ -30,7 +30,6 @@ void Window::Create() {
         throw std::runtime_error("Failed to initialize GLEW!");
     }
 
-    glfwSwapInterval(1);
 }
 
 

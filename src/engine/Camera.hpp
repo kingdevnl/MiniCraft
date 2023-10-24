@@ -18,6 +18,8 @@ public:
     const glm::vec3& GetPosition() const { return m_Position; }
     const glm::vec3& GetDirection() const { return m_ForwardDirection; }
 
+    void SetPosition(const glm::vec3& position) { m_Position = position; RecalculateView(); }
+
 
     float GetRotationSpeed();
     void RecalculateProjection();

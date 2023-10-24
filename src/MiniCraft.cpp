@@ -14,6 +14,7 @@
 #include "engine/TextureArray.hpp"
 #include "game/BlockRegistry.hpp"
 #include "game/Chunk.hpp"
+#include "engine/Timer.hpp"
 
 
 
@@ -43,13 +44,17 @@ void MiniCraft::Init() {
     m_Shader->Create();
     m_TextureArray->Create();
 
+    m_Camera->SetPosition({-0.2776233, 17.747576, 5.88351});
 
     InitImGui();
 
     m_BlockRegistry->LoadFromFile("assets/blocks.json");
 
-    for(int x = 0; x < 4; x++) {
-        for(int z = 0; z < 4; z++) {
+    int radius = 2;
+
+    //make in a circle arround 0,0 of radius
+    for(int x = -radius; x < radius; x++) {
+        for(int z = -radius; z < radius; z++) {
             auto chunk = Chunk(glm::vec3(x, 0, z));
             chunk.Generate();
             chunk.BuildMesh();
@@ -59,9 +64,6 @@ void MiniCraft::Init() {
 
 
 
-
-//    chunk.BuildMesh(m_TextureArray);
-//
 
 
     glfwSetKeyCallback(m_Window->GetHandle(), [](GLFWwindow *, int key, int scancode, int action, int) {
@@ -121,6 +123,10 @@ void MiniCraft::Run() {
     }
 }
 
+std::string VecToString(glm::vec3 vec) {
+    return "(" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " + std::to_string(vec.z) + ")";
+}
+
 
 void MiniCraft::OnUpdate(double deltaTime) {
 
@@ -140,10 +146,11 @@ void MiniCraft::OnUpdate(double deltaTime) {
     m_Shader->SetUniform1i("texArray", m_TextureArray->GetTextureID());
 
 
-    for (auto &pair : m_Chunks) {
-        auto chunk = pair.second;
-        chunk.Render(m_Shader);
+
+    for(auto& [k,v] : m_Chunks) {
+        v.Render(m_Shader);
     }
+
 
 
 
