@@ -26,11 +26,26 @@ namespace JS {
 
         spdlog::info(fmt);
     }
+
+    void loadPlugin(qjs::Value Plugin) {
+        auto ctx = MiniCraft::m_Instance->GetJSContext();
+        auto runtime = MiniCraft::m_Instance->GetJSRuntime();
+
+
+        if(JS_IsConstructor(ctx->ctx, Plugin.v)) {
+            JSValue instanced = JS_CallConstructor(ctx->ctx, Plugin.v, 0, nullptr);
+
+            JS_FreeValue(ctx->ctx, instanced);
+
+        }
+
+
+    }
+
 }
 
 
 MiniCraft::MiniCraft()
-        : m_JSRuntime(qjs::Runtime()), m_JSContext(m_JSRuntime)
 {
     this->m_Window = CreateRef<Window>(1080, 720, "MiniCraft");
 
@@ -45,40 +60,37 @@ MiniCraft::MiniCraft()
     this->m_BlockRegistry = CreateRef<BlockRegistry>(m_TextureArray);
 
 
-    js_std_init_handlers(m_JSRuntime.rt);
-    js_std_add_helpers(m_JSContext.ctx, 0, NULL);
-    js_init_module_std(m_JSContext.ctx, "std");
-    js_init_module_os(m_JSContext.ctx, "os");
+    this->m_JSRuntime = CreateRef<qjs::Runtime>();
+    this->m_JSContext = CreateRef<qjs::Context>(*m_JSRuntime);
+
+
+    js_std_init_handlers(m_JSRuntime->rt);
+    js_std_add_helpers(m_JSContext->ctx, 0, NULL);
+    js_init_module_std(m_JSContext->ctx, "std");
+    js_init_module_os(m_JSContext->ctx, "os");
+    js_std_loop(m_JSContext->ctx);
 
 
     //define a global log function
 
-    auto& module = m_JSContext.addModule("MiniCraft");
+    auto& module = m_JSContext->addModule("MiniCraft");
     module.function<&JS::log>("log");
+    module.function<&JS::loadPlugin>("loadPlugin");
 
 
-    try {
-        m_JSContext.eval(R"xxx(
-            import * as MiniCraft from 'MiniCraft';
-            MiniCraft.log("Hello, World! from JS", 123, "works");
-        )xxx", "<import>", JS_EVAL_TYPE_MODULE);
-    }    catch(qjs::exception)
-    {
-        auto exc = m_JSContext.getException();
-        std::cerr << (std::string) exc << std::endl;
-        if((bool) exc["stack"])
-            std::cerr << (std::string) exc["stack"] << std::endl;
-    }
 
 
 
 }
 
 MiniCraft::~MiniCraft() {
+    js_std_free_handlers(m_JSRuntime->rt);
+
 }
 
 
 void MiniCraft::Init() {
+
     m_Window->Create();
 
     m_Shader->Create();
@@ -89,6 +101,20 @@ void MiniCraft::Init() {
     InitImGui();
 
     m_BlockRegistry->LoadFromFile("assets/blocks.json");
+
+
+
+
+
+    try {
+        qjs::Value val = m_JSContext->evalFile("assets/scripts/test.js", JS_EVAL_TYPE_MODULE);
+    }    catch(qjs::exception)
+    {
+        auto exc = m_JSContext->getException();
+        std::cerr << (std::string) exc << std::endl;
+        if((bool) exc["stack"])
+            std::cerr << (std::string) exc["stack"] << std::endl;
+    }
 
     glm::vec3 startPos = glm::vec3(0, 0, 0);
     int radius = 10;

@@ -28,6 +28,9 @@ public:
     inline Ref<Camera> GetCamera() const { return m_Camera; }
     inline Ref<TextureArray> GetTextureArray() const { return m_TextureArray; }
     inline Ref<BlockRegistry> GetBlockRegistry() const { return m_BlockRegistry; }
+    inline Ref<qjs::Context> GetJSContext() const { return m_JSContext; }
+    inline Ref<qjs::Runtime> GetJSRuntime() const { return m_JSRuntime; }
+
 
 private:
     Ref<Window> m_Window;
@@ -39,8 +42,8 @@ private:
     std::unordered_map<glm::vec3, Chunk> m_Chunks;
 
     bool m_Wireframe = false;
-    qjs::Runtime m_JSRuntime;
-    qjs::Context m_JSContext;
+    Ref<qjs::Runtime> m_JSRuntime;
+    Ref<qjs::Context> m_JSContext;
 
 
 public:
