@@ -5,6 +5,9 @@ int main() {
     spdlog::info("Hello, World!");
 
 
+
+
+
     try {
         MiniCraft::m_Instance = CreateRef<MiniCraft>();
 
