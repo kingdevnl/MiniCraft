@@ -22,6 +22,7 @@ public:
     void Render(Ref<ShaderProgram> shaderProgram);
 
     Block GetBlockAt(glm::vec3 pos);
+    void SetBlockAt(glm::vec3 pos, Block block);
 
 
     inline glm::vec3 GetChunkPos() const { return m_ChunkPos; }
@@ -31,7 +32,7 @@ public:
 
 private:
     glm::vec3 m_ChunkPos;
-    std::unordered_map<glm::vec3, Block> m_Blocks;
+    std::vector<Block> m_Blocks;
     uint m_VAO, m_VBO;
     int m_VertexCount = 0;
     bool m_IsDirty = false;

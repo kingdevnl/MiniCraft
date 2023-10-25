@@ -1,144 +1,188 @@
 #include <gl/glew.h>
+#include <execution>
 #include "game/Chunk.hpp"
 #include "MiniCraft.hpp"
 #include "engine/TextureArray.hpp"
 #include "game/BlockRegistry.hpp"
 #include "game/BlockFace.hpp"
 #include "vendor/FastNoiseLite.hpp"
+#include "engine/Timer.hpp"
 
 Chunk::Chunk(glm::vec3 mChunkPos) : m_ChunkPos(mChunkPos) {}
 
 
 
 void Chunk::Generate() {
-
-    int seed = 1337;
-
-    FastNoiseLite terrain;
-    terrain.SetSeed(seed);
-    terrain.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-    terrain.SetFrequency(0.001f);
-
-    FastNoiseLite forest;
-    forest.SetSeed(seed);
-    forest.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    forest.SetFractalType(FastNoiseLite::FractalType_Ridged);
+    static auto air = MiniCraft::Get()->GetBlockRegistry()->GetBlockInfo("grass");
 
 
-    FastNoiseLite mountain;
-    mountain.SetSeed(seed);
-    mountain.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-    mountain.SetFractalType(FastNoiseLite::FractalType_Ridged);
-    mountain.SetFrequency(0.005f);
+    Timer genTimer("GenChunk");
 
+    m_Blocks.resize(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
 
-    FastNoiseLite river;
-    river.SetSeed(seed);
-    river.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-    river.SetFractalType(FastNoiseLite::FractalType_Ridged);
-    river.SetFrequency(0.001f);
-
-
-
-    auto getHeight = [&](float x, float z) {
-        int height;
-
-        float noise = abs(terrain.GetNoise(x, z) + 0.5f);
-        if (noise < 0.05f)
-        {
-            height = (int)abs(8 * (river.GetNoise(x, z) + 0.8f)) + 30;
-        }
-
-        else if (noise < 1.2f)
-        {
-            height = (int)abs(10 * (forest.GetNoise(x, z) + 0.8f)) + 30;
-        }
-
-        else
-        {
-            height = (int)abs(30 * (mountain.GetNoise(x, z) + 0.8f)) + 30;
-        }
-
-        return height;
-    };
-
-
-    auto blockRegistry = MiniCraft::Get()->GetBlockRegistry();
-    for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int z = 0; z < CHUNK_SIZE; z++) {
-
-            int height = getHeight(x + m_ChunkPos.x * CHUNK_SIZE, z + m_ChunkPos.z * CHUNK_SIZE);
-
-            for (int y = 0; y < height; y++) {
-                glm::vec4 pos = glm::vec4(x, y, z, 1.0);
-                //if top layer use grass
-                BlockInfo* blockInfo;
-                if (y == height - 1) {
-                    blockInfo = blockRegistry->GetBlockInfo("grass");
-                } else if (y > height - 5) {
-                    blockInfo = blockRegistry->GetBlockInfo("dirt");
-                } else if (y == 0) {
-                    blockInfo = blockRegistry->GetBlockInfo("bedrock");
-                }
-                else {
-                    blockInfo = blockRegistry->GetBlockInfo("cobblestone");
-                }
-
-                m_Blocks[pos] = Block{blockInfo, pos};
-
+    for(int x = 0; x < CHUNK_SIZE; x++) {
+        for(int z = 0; z < CHUNK_SIZE; z++) {
+            for(int y =0; y < CHUNK_SIZE; y++) {
+                auto blockPos = glm::vec3(x, y, z);
+                SetBlockAt(blockPos, Block{air, blockPos});
             }
-
         }
     }
+    genTimer.Stop();
+
+
+//    int seed = 1337;
+//
+//    FastNoiseLite terrain;
+//    terrain.SetSeed(seed);
+//    terrain.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+//    terrain.SetFrequency(0.001f);
+//
+//    FastNoiseLite forest;
+//    forest.SetSeed(seed);
+//    forest.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+//    forest.SetFractalType(FastNoiseLite::FractalType_Ridged);
+//
+//
+//    FastNoiseLite mountain;
+//    mountain.SetSeed(seed);
+//    mountain.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+//    mountain.SetFractalType(FastNoiseLite::FractalType_Ridged);
+//    mountain.SetFrequency(0.005f);
+//
+//
+//    FastNoiseLite river;
+//    river.SetSeed(seed);
+//    river.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+//    river.SetFractalType(FastNoiseLite::FractalType_Ridged);
+//    river.SetFrequency(0.001f);
+//
+//
+//
+//    auto getHeight = [&](float x, float z) {
+//        int height;
+//
+//        float noise = abs(terrain.GetNoise(x, z) + 0.5f);
+//        if (noise < 0.05f)
+//        {
+//            height = (int)abs(8 * (river.GetNoise(x, z) + 0.8f)) + 30;
+//        }
+//
+//        else if (noise < 1.2f)
+//        {
+//            height = (int)abs(10 * (forest.GetNoise(x, z) + 0.8f)) + 30;
+//        }
+//
+//        else
+//        {
+//            height = (int)abs(30 * (mountain.GetNoise(x, z) + 0.8f)) + 30;
+//        }
+//
+//        return height;
+//    };
+//
+//
+//    auto blockRegistry = MiniCraft::Get()->GetBlockRegistry();
+//    for (int x = 0; x < CHUNK_SIZE; x++) {
+//        for (int z = 0; z < CHUNK_SIZE; z++) {
+//
+//            int height = getHeight(x + m_ChunkPos.x * CHUNK_SIZE, z + m_ChunkPos.z * CHUNK_SIZE);
+//
+//            for (int y = 0; y < height; y++) {
+//                glm::vec4 pos = glm::vec4(x, y, z, 1.0);
+//                //if top layer use grass
+//                BlockInfo* blockInfo;
+//                if (y == height - 1) {
+//                    blockInfo = blockRegistry->GetBlockInfo("grass");
+//                } else if (y > height - 5) {
+//                    blockInfo = blockRegistry->GetBlockInfo("dirt");
+//                } else if (y == 0) {
+//                    blockInfo = blockRegistry->GetBlockInfo("bedrock");
+//                }
+//                else {
+//                    blockInfo = blockRegistry->GetBlockInfo("cobblestone");
+//                }
+//
+//                m_Blocks[pos] = Block{blockInfo, pos};
+//
+//            }
+//
+//        }
+//    }
 }
 
 void Chunk::BuildMesh() {
-    auto textureArray = MiniCraft::Get()->GetTextureArray();
+    static auto textureArray = MiniCraft::Get()->GetTextureArray();
+
+    Timer buildTimer("BuildMesh");
 
 
-    for (auto &[k, block]: m_Blocks) {
+    for(auto& block : m_Blocks) {
         auto addFace = [&](EnumFace face, float texID) {
             auto v = BlockFace::GetVert(face, this, block, texID);
             m_Vertices.insert(m_Vertices.end(), v.begin(), v.end());
         };
 
-
-        if (GetBlockAt(block.position + glm::vec3(0, 0, 1)).blockInfo->id == 0) {
-            addFace(EnumFace::FRONT, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
-        }
-        if (GetBlockAt(block.position + glm::vec3(0, 0, -1)).blockInfo->id == 0) {
-            addFace(EnumFace::BACK, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
-        }
-        if (GetBlockAt(block.position + glm::vec3(-1, 0, 0)).blockInfo->id == 0) {
-            addFace(EnumFace::LEFT, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
-        }
-        if (GetBlockAt(block.position + glm::vec3(1, 0, 0)).blockInfo->id == 0) {
-            addFace(EnumFace::RIGHT, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
-        }
-        if (GetBlockAt(block.position + glm::vec3(0, 1, 0)).blockInfo->id == 0) {
-            addFace(EnumFace::TOP, (float) textureArray->GetTextureIndex(block.blockInfo->textures.top));
-        }
-        if (GetBlockAt(block.position + glm::vec3(0, -1, 0)).blockInfo->id == 0) {
-            addFace(EnumFace::BOTTOM, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
-        }
-
+        addFace(EnumFace::FRONT, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
+        addFace(EnumFace::BACK, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
     }
+
+
+//
+//    for (auto &[k, block]: m_Blocks) {
+//        auto addFace = [&](EnumFace face, float texID) {
+//            auto v = BlockFace::GetVert(face, this, block, texID);
+//            m_Vertices.insert(m_Vertices.end(), v.begin(), v.end());
+//        };
+//
+//
+//        if (GetBlockAt(block.position + glm::vec3(0, 0, 1)).blockInfo->id == 0) {
+//            addFace(EnumFace::FRONT, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
+//        }
+//        if (GetBlockAt(block.position + glm::vec3(0, 0, -1)).blockInfo->id == 0) {
+//            addFace(EnumFace::BACK, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
+//        }
+//        if (GetBlockAt(block.position + glm::vec3(-1, 0, 0)).blockInfo->id == 0) {
+//            addFace(EnumFace::LEFT, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
+//        }
+//        if (GetBlockAt(block.position + glm::vec3(1, 0, 0)).blockInfo->id == 0) {
+//            addFace(EnumFace::RIGHT, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
+//        }
+//        if (GetBlockAt(block.position + glm::vec3(0, 1, 0)).blockInfo->id == 0) {
+//            addFace(EnumFace::TOP, (float) textureArray->GetTextureIndex(block.blockInfo->textures.top));
+//        }
+//        if (GetBlockAt(block.position + glm::vec3(0, -1, 0)).blockInfo->id == 0) {
+//            addFace(EnumFace::BOTTOM, (float) textureArray->GetTextureIndex(block.blockInfo->textures.side));
+//        }
+//
+//    }
 
     this->m_VertexCount = m_Vertices.size();
 
     SetIsDirty(true);
+
+    buildTimer.Stop();
 
 
 
 }
 
 Block Chunk::GetBlockAt(glm::vec3 pos) {
-    if (m_Blocks.find(pos) == m_Blocks.end()) {
-        auto *info = new BlockInfo();
-        info->id = 0;
-        return Block{info, pos};
+    int index = (int) (pos.x + pos.y * CHUNK_SIZE + pos.z * CHUNK_SIZE * CHUNK_SIZE);
+    //check if block is in chunk
+    if (index < 0 || index >= m_Blocks.size()) {
+        static auto air = MiniCraft::Get()->GetBlockRegistry()->GetBlockInfo("air");
+        return Block{air, pos};
     }
-    return m_Blocks[pos];
+
+}
+
+void Chunk::SetBlockAt(glm::vec3 pos, Block block) {
+    int index = (int) (pos.x + pos.y * CHUNK_SIZE + pos.z * CHUNK_SIZE * CHUNK_SIZE);
+
+
+    m_Blocks[index] = block;
+
 }
 
 void Chunk::Render(Ref<ShaderProgram> shaderProgram) {

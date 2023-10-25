@@ -6,7 +6,6 @@
 #include "BlockRegistry.hpp"
 #include "Chunk.hpp"
 
-
 enum EnumFace : uint8_t {
     FRONT = 0,
     BACK = 1,
@@ -86,6 +85,7 @@ namespace BlockFace {
         glm::vec4 normal;
         const std::vector<glm::vec4> *vertexArray = nullptr;
 
+
         auto chunkPos = chunk->GetChunkPos();
 
         switch (face) {
@@ -121,22 +121,19 @@ namespace BlockFace {
 
 
 
-        glm::vec3 chunkOffset = {
-                chunkPos.x * CHUNK_SIZE,
-                chunkPos.y * CHUNK_SIZE,
-                chunkPos.z * CHUNK_SIZE};
-
-
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, chunkOffset);
-        transform = glm::translate(transform, block.position);
+        glm::vec4 chunkOffset = {
+                chunkPos.x * CHUNK_SIZE + block.position.x,
+                chunkPos.y * CHUNK_SIZE + block.position.y,
+                chunkPos.z * CHUNK_SIZE + block.position.z,
+                1.0,
+        };
 
         if (vertexArray) {
             int i = 0;
             for (const auto &vert: *vertexArray) {
                 // Assuming 'i' comes from somewhere
                 glm::vec4 uv = UVS[i];
-                verts.push_back(Vertex{texID, transform * vert, normal, uv});
+                verts.push_back(Vertex{texID, vert + chunkOffset, normal, uv});
                 i++;
             }
         }

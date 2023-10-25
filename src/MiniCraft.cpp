@@ -16,7 +16,7 @@
 #include "game/Chunk.hpp"
 
 
-BS::thread_pool pool(4);
+BS::thread_pool pool(8);
 namespace JS {
     void log(qjs::rest<std::string> args) {
         std::string fmt = args[0];
@@ -34,12 +34,8 @@ namespace JS {
 
         if(JS_IsConstructor(ctx->ctx, Plugin.v)) {
             JSValue instanced = JS_CallConstructor(ctx->ctx, Plugin.v, 0, nullptr);
-
             JS_FreeValue(ctx->ctx, instanced);
-
         }
-
-
     }
 
 }
@@ -216,22 +212,22 @@ void MiniCraft::OnUpdate(double deltaTime) {
     }
 
 
-    // have a 4x4 of chunks around the player
-    glm::vec3 camPos = m_Camera->GetPosition();
-    glm::vec3 chunkPos = glm::vec3(floor(camPos.x / CHUNK_SIZE), 0, floor(camPos.z / CHUNK_SIZE));
-    int radius = 8;
-
-    for (int x = -radius / 2; x < radius / 2; x++) {
-        for (int z = -radius / 2; z < radius / 2; z++) {
-            glm::vec3 pos = glm::vec3(chunkPos.x + x, 0, chunkPos.z + z);
-            if (m_Chunks.find(pos) == m_Chunks.end()) {
-                Chunk chunk = Chunk(pos);
-                chunk.Generate();
-                chunk.BuildMesh();
-                m_Chunks.insert({chunk.GetChunkPos(), chunk});
-            }
-        }
-    }
+//    // have a 4x4 of chunks around the player
+//    glm::vec3 camPos = m_Camera->GetPosition();
+//    glm::vec3 chunkPos = glm::vec3(floor(camPos.x / CHUNK_SIZE), 0, floor(camPos.z / CHUNK_SIZE));
+//    int radius = 8;
+//
+//    for (int x = -radius / 2; x < radius / 2; x++) {
+//        for (int z = -radius / 2; z < radius / 2; z++) {
+//            glm::vec3 pos = glm::vec3(chunkPos.x + x, 0, chunkPos.z + z);
+//            if (m_Chunks.find(pos) == m_Chunks.end()) {
+//                Chunk chunk = Chunk(pos);
+//                chunk.Generate();
+//                chunk.BuildMesh();
+//                m_Chunks.insert({chunk.GetChunkPos(), chunk});
+//            }
+//        }
+//    }
 
 
 }
